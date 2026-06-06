@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Synthwave Arduino Remote</title>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="manifest" href="manifest.json">
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
+  <meta name="theme-color" content="#1a0b2e">
+</head>
+
+<body>
+  <nav class="navbar">
+    <div class="hamburger" id="hamburger">
+      <span></span>
+      <span></span>
+      <span></span>
+    </div>
+    <h1 class="nav-title">SYS_CONTROL</h1>
+  </nav>
+
+  <aside class="sidebar" id="sidebar">
+    <ul>
+      <li data-view="send-view" class="active">Send Instructions</li>
+      <li data-view="definitions-view">Definitions</li>
+      <li data-view="configuration-view">Configuration</li>
+    </ul>
+  </aside>
+
+  <main class="content">
+    <!-- Send Instructions View -->
+    <section id="send-view" class="view active">
+      <div class="top-half">
+        <h2>STAGING AREA</h2>
+        <ul id="staging-list">
+          <!-- Staged commands will appear here -->
+        </ul>
+        <button id="send-btn" class="neon-button primary">SEND INSTRUCTIONS</button>
+      </div>
+
+      <div class="bottom-half">
+        <h2>COMMAND PALETTE</h2>
+        <div class="tabs" id="category-tabs">
+          <!-- Tabs will be injected here -->
+        </div>
+        <div class="tab-content" id="palette-content">
+          <!-- Command buttons will be injected here -->
+        </div>
+
+        <div class="custom-input-box">
+          <input type="text" id="custom-command-input" placeholder="Enter custom command...">
+          <button id="add-custom-btn" class="neon-button secondary">ADD</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Definitions View -->
+    <section id="definitions-view" class="view hidden">
+      <h2>DEFINITIONS DB</h2>
+      <div class="dictionary-list" id="dictionary-list">
+        <!-- Dictionary items will be injected here -->
+      </div>
+    </section>
+
+    <!-- Configuration View -->
+    <section id="configuration-view" class="view hidden">
+      <h2>NETWORK CONFIGURATION</h2>
+      <div class="top-half" style="margin-top: 20px;">
+        <div style="display: flex; flex-direction: column; gap: 15px;">
+          <label for="ip-input" style="color: var(--neon-cyan); font-weight: bold;">Arduino IP Address:</label>
+          <input type="text" id="ip-input" placeholder="e.g. 192.168.1.100"
+            style="background: rgba(0, 0, 0, 0.8); border: 1px solid var(--neon-cyan); color: #fff; padding: 10px; font-family: 'Orbitron', sans-serif; border-radius: 4px; font-size: 1.1rem;">
+          <button id="save-ip-btn" class="neon-button primary"
+            style="margin-top: 10px; border-color: var(--neon-cyan); color: var(--neon-cyan); text-shadow: 0 0 8px var(--neon-cyan); box-shadow: 0 0 10px var(--neon-cyan), inset 0 0 10px rgba(0, 255, 255, 0.5);">SAVE
+            CONFIGURATION</button>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <div class="overlay" id="overlay"></div>
+
+  <script src="app.js"></script>
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/sw.js').then(reg => {
+          console.log('SW registered!', reg);
+        }).catch(err => console.log('SW registration failed', err));
+      });
+    }
+  </script>
+</body>
+
+</html>
