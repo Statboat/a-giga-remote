@@ -1,15 +1,15 @@
 {
   "name": "Synthwave Arduino Remote",
   "short_name": "SYS_CONTROL",
-  "start_url": "/index.html",
+  "start_url": ".",
   "display": "standalone",
   "background_color": "#0b021a",
   "theme_color": "#ff00ea",
   "description": "Remote control interface for Arduino Giga R1",
   "icons": [
     {
-      "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' fill='%230b021a'/%3E%3Ctext x='50%25' y='50%25' font-size='100' fill='%23ff00ea' font-family='sans-serif' text-anchor='middle' dominant-baseline='middle'%3ESYS%3C/text%3E%3C/svg%3E",
-      "sizes": "512x512",
+      "src": "icon.svg",
+      "sizes": "any",
       "type": "image/svg+xml",
       "purpose": "any maskable"
     }
