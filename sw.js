@@ -1,10 +1,11 @@
-const CACHE_NAME = 'synthwave-remote-v1';
+const CACHE_NAME = 'synthwave-remote-v2';
 const ASSETS_TO_CACHE = [
-  '/',
-  '/index.html',
-  '/styles.css',
-  '/app.js',
-  '/manifest.json',
+  './',
+  './index.html',
+  './styles.css',
+  './app.js',
+  './manifest.json',
+  './icon.svg',
   'https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap'
 ];
 
