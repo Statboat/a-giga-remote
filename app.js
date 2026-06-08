@@ -14,12 +14,10 @@ const COMMANDS = [
   { c_number: 5, category: "Oral Performance", command: "Lick tip", description: "Focus tongue on the head/tip only, swirling and teasing" },
   { c_number: 6, category: "Oral Performance", command: "Twirl", description: "Swirl tongue around the head in circles while lips sealed" },
   { c_number: 7, category: "Oral Performance", command: "Kiss tip", description: "Repeated soft kisses directly on the tip" },
-  { c_number: 8, category: "Oral Performance", command: "Dildo slap", description: "Slap the dildo against cheeks, lips, and tongue" },
   { c_number: 9, category: "Oral Performance", command: "Deepthroat massage", description: "Hold deep and use throat muscles to squeeze/massage" },
   { c_number: 10, category: "Oral Performance", command: "Gag and hold", description: "Push to back of throat and hold while gagging" },
   { c_number: 11, category: "Oral Performance", command: "Tongue out", description: "Stick tongue out flat and slap/rub dildo on it" },
-  { c_number: 12, category: "Oral Performance", command: "Suck balls", description: "Suck and lick the balls submissively (if applicable)" },
-  { c_number: 13, category: "Oral Performance", command: "Throat fuck ready", description: "Open mouth wide, tongue out, hands behind back" },
+  { c_number: 12, category: "Oral Performance", command: "Kiss balls", description: "Kiss and lick the balls submissively" },
   { c_number: 14, category: "Oral Performance", command: "Suck", description: "Perform steady, continuous sucking with sealed lips" },
   { c_number: 15, category: "Oral Performance", command: "Suck & Hold", description: "Seal lips tightly and apply strong continuous suction" },
   { c_number: 16, category: "Oral Performance", command: "Throat Pulse", description: "Hold dildo deep and rhythmically pulse throat muscles" },
@@ -47,6 +45,8 @@ const COMMANDS = [
   { c_number: 33, category: "Advanced / Endurance", command: "Toy Freeze", description: "Become completely motionless like a mannequin" },
 
   { c_number: 34, category: "Bimbo Specific", command: "Idle Suck", description: "Gentle, mindless continuous sucking" },
+  { c_number: 13, category: "Bimbo Specific", command: "Throat fuck ready", description: "Open mouth wide, tongue out, hands behind back" },
+  { c_number: 8, category: "Bimbo Specific", command: "Dildo slap", description: "Slap the dildo against forhead, cheeks, lips, and tongue" },
   { c_number: 35, category: "Bimbo Specific", command: "Blank Stare", description: "Wide eyes, slack jaw, zero expression" }
 ];
 
@@ -66,6 +66,9 @@ const categoryTabs = document.getElementById('category-tabs');
 const paletteContent = document.getElementById('palette-content');
 const stagingList = document.getElementById('staging-list');
 const sendBtn = document.getElementById('send-btn');
+const startAutomatedSessionBtn = document.getElementById('start-automated-session-btn');
+const stopAutomatedSessionBtn = document.getElementById('stop-automated-session-btn');
+const automationStatus = document.getElementById('automation-status');
 
 const customCommandInput = document.getElementById('custom-command-input');
 const addCustomBtn = document.getElementById('add-custom-btn');
@@ -73,6 +76,25 @@ const dictionaryList = document.getElementById('dictionary-list');
 
 const ipInput = document.getElementById('ip-input');
 const saveIpBtn = document.getElementById('save-ip-btn');
+
+const AUTOMATED_SESSION_STEPS = [
+  { sequence: 1, minuteOffset: 0, displayCommands: ['Hands behind head', 'Bounce boobs', 'Look up', 'Suck'] },
+  { sequence: 2, minuteOffset: 3, displayCommands: ['Bob', 'Bounce boobs', 'Begging eyes', 'No hands'] },
+  { sequence: 3, minuteOffset: 6, displayCommands: ['Slower', 'Lick shaft', 'Tilt head', 'Bounce boobs'] },
+  { sequence: 4, minuteOffset: 9, displayCommands: ['Throat fuck ready', 'Idle Suck', 'Bounce boobs', 'Hands behind head'] },
+  { sequence: 5, minuteOffset: 12, displayCommands: ['Deeper', 'Bob', 'Bounce boobs', 'Look up'] },
+  { sequence: 6, minuteOffset: 16, displayCommands: ['Throat Pulse', 'Gag and hold', 'Bounce boobs', 'Look up'] },
+  { sequence: 7, minuteOffset: 20, displayCommands: ['Tip Torture', 'Suck & Hold', 'Begging eyes', 'Bounce boobs'] },
+  { sequence: 8, minuteOffset: 24, displayCommands: ['Faster', 'Deepthroat massage', 'Bounce boobs', 'Self Slap'] },
+  { sequence: 9, minuteOffset: 30, displayCommands: ['Dildo slap', 'Bounce boobs', 'Begging eyes', 'Suck'] },
+  { sequence: 10, minuteOffset: 34, displayCommands: ['Gag and hold', 'Throat Pulse', 'No hands', 'Bounce boobs'] },
+  { sequence: 11, minuteOffset: 38, displayCommands: ['Faster', 'Self Slap', 'Bounce boobs', 'Toy Freeze'] },
+  { sequence: 12, minuteOffset: 42, displayCommands: ['Gag and hold', 'Toy Freeze', 'Blank Stare', 'Bounce boobs'] },
+  { sequence: 13, minuteOffset: 45, displayCommands: ['Session Complete + Freeze'] }
+];
+
+let automationRunId = 0;
+let automationTimeouts = [];
 
 // ==========================================
 // INITIALIZATION
@@ -92,6 +114,8 @@ function init() {
     renderPaletteCommands(categories[0]);
     document.querySelector(`.tab[data-cat="${categories[0]}"]`).classList.add('active');
   }
+
+  setAutomationStatus('Automated session idle.');
 }
 
 // ==========================================
@@ -231,6 +255,86 @@ function renderStagingArea() {
   });
 }
 
+function setAutomationStatus(message, variant) {
+  automationStatus.classList.remove('is-error', 'is-success');
+  if (variant) {
+    automationStatus.classList.add(variant);
+  }
+  automationStatus.innerText = message;
+}
+
+function clearAutomationTimers() {
+  automationTimeouts.forEach(timeoutId => clearTimeout(timeoutId));
+  automationTimeouts = [];
+}
+
+function resetAutomationControls(message = 'Automated session idle.', variant) {
+  clearAutomationTimers();
+  startAutomatedSessionBtn.disabled = false;
+  stopAutomatedSessionBtn.disabled = true;
+  setAutomationStatus(message, variant);
+}
+
+function buildPayloadFromCommandNames(commandNames) {
+  const matchedCommands = commandNames.map((name) => {
+    const command = COMMANDS.find((item) => item.command === name);
+    if (!command) {
+      return {
+        c_number: 0,
+        category: 'Automation',
+        command: name,
+        description: 'Automated session step'
+      };
+    }
+
+    return command;
+  });
+
+  return matchedCommands.map((command, index) => {
+    return `${index + 1}. [${command.category}] ${command.command} (#${command.c_number})\n   -> ${command.description}`;
+  }).join('\n\n');
+}
+
+async function sendPayloadToArduino(payloadText) {
+  const url = `http://${arduinoIP}:80/`;
+  return fetch(url, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'text/plain',
+    },
+    body: payloadText
+  });
+}
+
+async function sendAutomatedStep(step, runId) {
+  if (runId !== automationRunId) {
+    return;
+  }
+
+  const payloadText = buildPayloadFromCommandNames(step.displayCommands);
+
+  try {
+    const response = await sendPayloadToArduino(payloadText);
+
+    if (runId !== automationRunId) {
+      return;
+    }
+
+    if (response.ok) {
+      setAutomationStatus(`Sent sequence ${step.sequence} at ${step.minuteOffset} minutes.`, 'is-success');
+      return;
+    }
+
+    setAutomationStatus(`Sequence ${step.sequence} failed to send. Arduino returned ${response.status}.`, 'is-error');
+  } catch (error) {
+    if (runId !== automationRunId) {
+      return;
+    }
+
+    setAutomationStatus(`Sequence ${step.sequence} failed: ${error.message}`, 'is-error');
+  }
+}
+
 // Custom Command Button Logic
 addCustomBtn.addEventListener('click', () => {
   const val = customCommandInput.value.trim();
@@ -265,6 +369,48 @@ saveIpBtn.addEventListener('click', () => {
   }
 });
 
+startAutomatedSessionBtn.addEventListener('click', () => {
+  if (!arduinoIP) {
+    alert('Please configure the Arduino IP address first in the Configuration view.');
+    return;
+  }
+
+  clearAutomationTimers();
+  automationRunId += 1;
+  const runId = automationRunId;
+
+  setAutomationStatus('Automated session started. Sequence 1 is being sent now.', 'is-success');
+
+  AUTOMATED_SESSION_STEPS.forEach((step) => {
+    const timeoutId = setTimeout(() => {
+      sendAutomatedStep(step, runId);
+    }, step.minuteOffset * 60 * 1000);
+
+    automationTimeouts.push(timeoutId);
+  });
+
+  startAutomatedSessionBtn.disabled = true;
+  stopAutomatedSessionBtn.disabled = false;
+
+  const finalStepTimeout = setTimeout(() => {
+    if (runId !== automationRunId) {
+      return;
+    }
+
+    setAutomationStatus('Automated session complete.', 'is-success');
+    startAutomatedSessionBtn.disabled = false;
+    stopAutomatedSessionBtn.disabled = true;
+    automationTimeouts = automationTimeouts.filter((timeoutId) => timeoutId !== finalStepTimeout);
+  }, (AUTOMATED_SESSION_STEPS[AUTOMATED_SESSION_STEPS.length - 1].minuteOffset + 1) * 60 * 1000);
+
+  automationTimeouts.push(finalStepTimeout);
+});
+
+stopAutomatedSessionBtn.addEventListener('click', () => {
+  automationRunId += 1;
+  resetAutomationControls('Automated session stopped.', 'is-error');
+});
+
 // ==========================================
 // SEND DATA TO ARDUINO
 // ==========================================
@@ -291,15 +437,7 @@ sendBtn.addEventListener('click', async () => {
   sendBtn.style.pointerEvents = "none";
 
   try {
-    const url = `http://${arduinoIP}:80/`;
-    // Sending raw text since Arduino reads requestBody directly
-    const response = await fetch(url, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'text/plain',
-      },
-      body: payloadText
-    });
+    const response = await sendPayloadToArduino(payloadText);
     
     if (response.ok) {
       console.log("Successfully sent to Arduino");

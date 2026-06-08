@@ -321,6 +321,63 @@ h2 {
   box-shadow: 0 0 15px var(--neon-orange);
 }
 
+.automation-button {
+  margin-top: 12px;
+  width: 100%;
+  color: var(--neon-cyan);
+  border-color: var(--neon-cyan);
+  text-shadow: 0 0 5px var(--neon-cyan);
+  box-shadow: 0 0 8px rgba(0, 255, 255, 0.45);
+}
+
+.automation-button:hover,
+.automation-button:active {
+  background: var(--neon-cyan);
+  color: #000;
+  box-shadow: 0 0 15px var(--neon-cyan);
+}
+
+.automation-status {
+  margin-top: 10px;
+  min-height: 1.5em;
+  color: var(--neon-yellow);
+  font-size: 0.95rem;
+  line-height: 1.4;
+  text-shadow: 0 0 6px rgba(255, 255, 0, 0.35);
+}
+
+.automation-status.is-error {
+  color: var(--neon-orange);
+  text-shadow: 0 0 6px rgba(255, 102, 0, 0.45);
+}
+
+.automation-status.is-success {
+  color: var(--neon-cyan);
+  text-shadow: 0 0 6px rgba(0, 255, 255, 0.45);
+}
+
+.automation-stop-button {
+  margin-top: 10px;
+  width: 100%;
+  color: var(--neon-orange);
+  border-color: var(--neon-orange);
+  text-shadow: 0 0 5px var(--neon-orange);
+  box-shadow: 0 0 8px rgba(255, 102, 0, 0.45);
+}
+
+.automation-stop-button:hover:enabled,
+.automation-stop-button:active:enabled {
+  background: var(--neon-orange);
+  color: #000;
+  box-shadow: 0 0 15px var(--neon-orange);
+}
+
+.automation-stop-button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
 /* Definitions View */
 .dictionary-list {
   display: flex;
